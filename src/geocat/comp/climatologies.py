@@ -126,6 +126,27 @@ def _infer_calendar_name(dates):
     else:
         return np.asarray(dates).ravel()[0].calendar
 
+def subset_by_season(dset, seasons, time_dim):
+    season_dict = {
+        'DJF': {12, 1, 2},
+        'JFM': {1, 2, 3},
+        'FMA': {2, 3, 4},
+        'MAM': {3, 4, 5},
+        'AMJ': {4, 5, 6},
+        'MJJ': {5, 6, 7},
+        'JJA': {6, 7, 8},
+        'JAS': {7, 8, 9},
+        'ASO': {8, 9, 10},
+        'SON': {9, 10, 11},
+        'OND': {10, 11, 12},
+        'NDJ': {11, 12, 1}
+    }
+    months = set()
+    for season in seasons:
+        months = months.union(season_dict[season])  # TODO: check if this is faster --> months = months.union(*[season_dict[season] for season in seasons])
+
+    return dset.where(dset['time.month'].isin(list(months)), drop=True)
+
 
 def climatology(
         dset: typing.Union[xr.DataArray, xr.Dataset],
@@ -523,7 +544,8 @@ def calendar_average(
 def climatology_average(
         dset: typing.Union[xr.DataArray, xr.Dataset],
         freq: str,
-        time_dim: str = None) -> typing.Union[xr.DataArray, xr.Dataset]:
+        time_dim: str = None,
+        seasons: list = ['DJF', 'MAM', 'JJA', 'SON']) -> typing.Union[xr.DataArray, xr.Dataset]:
     """This function calculates long term hourly, daily, monthly, or seasonal
     averages across all years in the given dataset.
 
@@ -607,6 +629,8 @@ def climatology_average(
     calendar = _infer_calendar_name(dset[time_dim])
 
     if freq == 'season':
+        dset = subset_by_season(dset, seasons, time_dim)
+
         if xr.infer_freq(dset[time_dim]) != 'MS':
             # Calculate monthly average before calculating seasonal climatologies
             dset = dset.resample({time_dim: frequency}).mean().dropna(time_dim)
