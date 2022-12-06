@@ -126,7 +126,7 @@ def _infer_calendar_name(dates):
     else:
         return np.asarray(dates).ravel()[0].calendar
 
-def subset_by_season(dset, seasons, time_dim):
+def _subset_by_season(dset, seasons, time_dim):
     season_dict = {
         'DJF': {12, 1, 2},
         'JFM': {1, 2, 3},
@@ -629,7 +629,7 @@ def climatology_average(
     calendar = _infer_calendar_name(dset[time_dim])
 
     if freq == 'season':
-        dset = subset_by_season(dset, seasons, time_dim)
+        dset = _subset_by_season(dset, seasons, time_dim)
 
         if xr.infer_freq(dset[time_dim]) != 'MS':
             # Calculate monthly average before calculating seasonal climatologies
