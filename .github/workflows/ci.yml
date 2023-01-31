@@ -66,7 +66,7 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
       - name: Open Issue on Failure
-        if: github.ref_name == 'main' && github.event.state == 'error' || github.event.state == 'failure'
+        if: github.ref_name == 'main' && failure()
         env:
           DESCRIPTION: ${{ github.event.description }}
           COMMIT: ${{ github.sha }}
@@ -104,4 +104,20 @@ jobs:
         run: |
           cd docs
           make linkcheck
+      - name: Open Issue on Failure
+        if: github.ref_name == 'main' && failure()
+        env:
+          DESCRIPTION: ${{ github.event.description }}
+          COMMIT: ${{ github.sha }}
+        uses: imjohnbo/issue-bot@3daae12aa54d38685d7ff8459fc8a2aee8cea98b
+        with:
+          assignees: "geocat"
+          labels: "high priority, bug"
+          title: "Main Branch Failed the Link Check"
+          body: |
+            The `main` branch failed the Link Check after $COMMIT was merged into it.
+            
+            $DESCRIPTION
+            
+          pinned: true
           
