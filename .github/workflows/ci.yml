@@ -88,3 +88,12 @@ jobs:
         run: |
           cd docs
           make linkcheck
+  
+  failure-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: failure_check
+        if: ${{ failure() && github.ref_name == 'main' }}
+        run: echo "The ${{ github.ref_name}} branch failed. Please address the issue.
+        
+        
