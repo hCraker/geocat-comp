@@ -1,12 +1,24 @@
+name: Main Failure
 on:
   status
 jobs:
   if_error_or_failure:
-    name: Main failure
+    name: Check for Main Failure
     runs-on: ubuntu-latest
     if: github.ref_name = 'main' && github.event.state == 'error' || github.event.state == 'failure'
     steps:
-      - env:
+      - name: Open Issue
+        env:
           DESCRIPTION: ${{ github.event.description }}
-        run: |
-          echo The status is error or failed: $DESCRIPTION
+          COMMIT: ${{ github.sha }}
+        uses: imjohnbo/issue-bot@3daae12aa54d38685d7ff8459fc8a2aee8cea98b
+        with:
+          assignees: "geocat"
+          labels: "high priority, bug"
+          title: "Main Branch Failed A Check"
+          body: |
+            The `main` branch failed after $COMMIT was merged into it.
+            
+            $DESCRIPTION
+            
+          pinned: true
